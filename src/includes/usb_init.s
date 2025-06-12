@@ -78,7 +78,7 @@ equates:
 
     // Enable interrupts for when a buffer is done, when the bus is reset, and when a setup packet is received
     // TODO
-    ldr r6, =0b0<<4 | 0b0<<12 | 0b1<<16
+    ldr r6, =0b1<<4 | 0b1<<12 | 0b1<<16
     add r7, #0x90
     str r6, [r7]
 
@@ -88,10 +88,10 @@ equates:
     // For Both EP's, enable the endpoint, Enable interrupts for every transferred buffer, use the bulk endpoint type, and set a address base offset
     ldr r7, =usb_dpsram_base
     // EP1 Out
-    ldr r6, =0b1<<31 | 0b1<<29 | 0b10<<26 // Since we will use an address base offset of 0 for EP1, we will leave the address base offsets as 0 (So we can ignore it here)
+    ldr r6, =0b0<<31 | 0b0<<29 | 0b10<<26 // Since we will use an address base offset of 0 for EP1, we will leave the address base offsets as 0 (So we can ignore it here)
     str r6, [r7, #0xc]
     // EP2 In
-    ldr r5, =0b1<<31 | 0b1<<29 | 0b10<<26 | 0b1<<6 // Since we will use an address base offset of 1 for EP1 and they must be 64 byte aligned, we will set the 6th bit from the right to 1.
+    ldr r5, =0b0<<31 | 0b0<<29 | 0b10<<26 | 0b1<<6 // Since we will use an address base offset of 1 for EP1 and they must be 64 byte aligned, we will set the 6th bit from the right to 1.
     str r6, [r7, #0x10]
 
     // Enable pull up on DP to present as a full-speed device
