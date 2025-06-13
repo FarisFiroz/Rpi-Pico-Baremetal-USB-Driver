@@ -24,11 +24,9 @@ usb_isr_setup_data_dir_out:
     // Initial If/Else {{{
     // Check which type of request it is
     ldrb r1, [r0, #1] // Load second byte of setup packet (bRequest)
-    mov r2, #5 // Check if the request is a SET_ADDRESS
-    and r2, r1 
-    bne handle_set_address // branch if SET_ADDRESS
-    mov r2, #7 // Check if the request is a SET_CONFIGURATION
-    and r2, r1
+    cmp r1, #5 // Check if the request is a SET_ADDRESS
+    beq handle_set_address // branch if SET_ADDRESS
+    cmp r1, #7 // Check if the request is a SET_CONFIGURATION
     b usb_isr_setup_ret // branch on all other out requests
     // If SET_CONFIGURATION, simply continue to run TODO
     // }}}
@@ -43,8 +41,6 @@ handle_set_address:
     //mov r3, #0x1 
     //lsl r3, #0x13
     //bl _usb_ack
-
-    //b tst
     
     b usb_isr_setup_ret
     // }}}
