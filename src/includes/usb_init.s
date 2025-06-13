@@ -56,6 +56,11 @@ equates:
 .equ usb_dpsram_base, usbctrl_regs_base - 0x10000
 .equ usbctrl_regs_atm, usbctrl_regs_base + 0x1000
 
+    // TODO clr some old data
+    ldr r7, =0x50100084
+    mov r6, #0
+    str r6, [r7]
+
     // Load usb control registers base address
     ldr r7, =usbctrl_regs_base
 
@@ -78,7 +83,7 @@ equates:
 
     // Enable interrupts for when a buffer is done, when the bus is reset, and when a setup packet is received
     // TODO
-    ldr r6, =0b1<<4 | 0b1<<12 | 0b1<<16
+    ldr r6, =0b0<<4 | 0b0<<12 | 0b1<<16
     add r7, #0x90
     str r6, [r7]
 

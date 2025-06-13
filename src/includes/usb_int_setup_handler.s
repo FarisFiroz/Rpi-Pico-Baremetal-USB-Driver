@@ -9,7 +9,7 @@ SET_CONFIGURATION
 */
 usb_isr_setup_packet_handler:
     // Data Direction Check {{{
-    
+
     // Load initial value
     ldr r0, =0x50100000 // Base address of the setup packet 
 
@@ -33,21 +33,21 @@ usb_isr_setup_data_dir_out:
     // If SET_CONFIGURATION, simply continue to run TODO
     // }}}
 
-    // SET_CONFIGURATION handler TODO {{{
-    // }}}
-
     // SET_ADDRESS handler {{{
 handle_set_address:
-    ldrb r4, [r0, #2]
+    //ldrb r4, [r0, #2]
 
-    // ACK with address 0
-    mov r1, r0
-    add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
-    bl _usb_ack
+    //// ACK with address 0
+    //mov r1, r0
+    //add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
+    //mov r3, #0x1 
+    //lsl r3, #0x13
+    //bl _usb_ack
+
+    //b tst
     
     b usb_isr_setup_ret
     // }}}
-
     // }}}
 
     // DATA DIRECTION IN {{{
@@ -76,11 +76,15 @@ handle_descriptor_type_device:
     mov r1, r0
     add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
     mov r2, r1
-    add r2, #0x80 // mem location of EP0 Buffer is 0x501000a0
+    add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
     ldr r3, =usb_device_descriptor // mem location of source is usb_device_descriptor
     mov r0, #18
     bl _usb_memcpy
- 
+
+    ldr r1, =0x50100084
+    mov r3, #0
+    bl _usb_ack
+
     b usb_isr_setup_ret
     // }}}
 
@@ -98,5 +102,5 @@ usb_isr_setup_ret:
     ldr r1, =0b1<<17
     str r1, [r0]
 
-    b usb_isr_callback
+    b usb_isr_ret
     // }}}

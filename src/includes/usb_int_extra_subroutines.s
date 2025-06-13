@@ -7,8 +7,17 @@ params:
 */
 _usb_memcpy:
     push {r4, r5, lr} // Push values to stack that we will modify
-    mov r5, r0 // copy length to use in buffer_control phase
 
+// Wait until controller is not using ep_0
+    mov r5, #1
+    lsl r5, #10 // R5 has available bit value
+usb_memcpy_check:
+    ldr r4, [r1] // Load buffer value
+    and r4, r5 // AND buffer val to desired bit
+    bne usb_memcpy_check // loop if Z=0, we want Z=1
+
+// preset length
+    mov r5, r0 // copy length to use in buffer_control phase
 // Actual memcopy from source to destination
 usb_memcpy_loop:
     ldrb r4, [r3] // From the current mem location of the source data, copy the value into our temporary buffer r4
@@ -16,36 +25,53 @@ usb_memcpy_loop:
     add r3, #1
     add r2, #1 // Increment source/target destinations
     sub r0, #1 // Subtract length of data remaining
-    bne usb_memcpy_loop // If r0 dones not equal 0 after the previous subtraction, loop
+    bgt usb_memcpy_loop // If r0 dones not equal 0 after the previous subtraction, loop
 
 // Memory copy should be done now, modifying the buffer control register will begin the transfer
 usb_memcpy_buffer_control:
-    ldrh r0, [r1] // First load the halfword holding data for buffer 1 into r0
-    mov r2, #1
-    lsl r2, #13 // Then isolate Data PID bit (bit 13) in another temporary register
-    and r0, r2 // If the Data PID bit is not set, r0 will become 0; if it is set, r0 will become 1
-    eor r0, r2 // Flip the previous value we found
-    ldr r2, =(0b1<<10 | 0b1<<15) 
-    orr r0, r2 // Set available and full bits for buffer 0
+    mov r0, #0
+    ldr r2, =(0b1<<15) | (0b1<<13)
+    orr r0, r2 // Set full bit for buffer 0
     orr r0, r5 // Set the bits for length for buffer 0
-    str r0, [r1] // Finally, store our calculated values to the bffer control register
+    str r0, [r1] // store our calculated values to the bffer control register
+    nop
+    nop
+    nop
+    ldr r2, =(0b1<<10) 
+    orr r0, r2 // Set available bit for buffer 0
+    str r0, [r1] // Store the available bit later because the system clock is faster than the controller
 
     pop {r4, r5, pc} // Pop from stack and return to function caller
 // }}}
 
-/* usb_ack function {{{
+/* usb_snl function {{{
 params:
     r1: mem location of buffer control register
+    r3: Direction of snl in/out
 */
+// Wait until controller is not using ep_0
 _usb_ack:
-    ldrh r3, [r1] // First load the halfword holding data for buffer 1 into r0
+
+// want to make sure buffer is ready
     mov r2, #1
-    lsl r2, #13 // Then isolate Data PID bit (bit 13) in another temporary register
-    and r3, r2 // If the Data PID bit is not set, r0 will become 0; if it is set, r0 will become 1
-    eor r3, r2 // Flip the previous value we found
+    lsl r2, #10 // R2 has available bit value
+usb_ack_check:
+    ldr r0, [r1] // Load buffer value
+    and r0, r2 // AND buffer val to desired bit
+    bne usb_ack_check // loop if Z=0, we want Z=1
+
+    ldr r0, =(0b1<<13)
+    orr r0, r3
+    str r0, [r1] // Finally, store our calculated values to the bffer control register
+    nop
+    nop
+    nop
     ldr r2, =0b1<<10 
-    orr r3, r2 // Set available bit for buffer 0
-    str r3, [r1] // Finally, store our calculated values to the bffer control register
+    orr r0, r2
+    str r0, [r1] // Finally, store our calculated values to the bffer control register
 
     bx lr
 // }}}
+
+tst:
+    b tst

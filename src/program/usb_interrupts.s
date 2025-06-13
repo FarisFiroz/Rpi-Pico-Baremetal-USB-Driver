@@ -20,17 +20,17 @@ usb_isr_callback:
     ldr r0, =usbctrl_regs_ints
     ldr r1, [r0]
 
-    // STEP 2: If this interrupt is caused by a bus reset packet, handle that
-    mov r2, #0b1
-    lsl r2, #12
-    and r2, r1
-    bne usb_isr_bus_reset_handler
-
     // STEP 3: If this interrupt is caused by a buffer being completed, handle that
     mov r2, #0b1
     lsl r2, #4
     and r2, r1
     bne usb_isr_buff_packet_handler
+
+    // STEP 2: If this interrupt is caused by a bus reset packet, handle that
+    mov r2, #0b1
+    lsl r2, #12
+    and r2, r1
+    bne usb_isr_bus_reset_handler
 
     // STEP 4: If this interrupt is a setup packet, handle that
     mov r2, #0b1
@@ -42,12 +42,18 @@ usb_isr_callback:
 
 // bus reset handler for isr {{{
 usb_isr_bus_reset_handler:
-    // Finally, clear the bits from the status register
+    // On bus reset, we must first flip the DATA PID bit to 0
+    //ldr r1, =0x50110080
+    //mov r0, #0
+    //str r0, [r1] // Finally, store our calculated values to the bffer control register
+
     mov r4, #0
     ldr r0, =0x50110000 + 0x50
     ldr r1, =0b1<<19
     str r1, [r0]
-    b usb_isr_callback
+    ldr r1, =0b1<<17
+    str r1, [r0]
+    b usb_isr_buff_ret
 // }}}
 // buffer packet handler for isr {{{
 usb_isr_buff_packet_handler:
@@ -58,7 +64,6 @@ new_addr_set:
     // set up new address
     ldr r2, =0x50110000
     str r4, [r2]
-    bl _usb_ack
     mov r4, #0
 
 usb_isr_buff_ret:

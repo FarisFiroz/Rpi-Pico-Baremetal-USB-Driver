@@ -1,5 +1,4 @@
-.section .rodata
-
+// Device descriptor data
 usb_device_descriptor:
     .byte 18      // (bLength)
     .byte 0x1     // (bDescriptorType) 
