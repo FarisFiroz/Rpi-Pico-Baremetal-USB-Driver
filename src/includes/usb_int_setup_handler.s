@@ -33,15 +33,15 @@ usb_isr_setup_data_dir_out:
 
     // SET_ADDRESS handler {{{
 handle_set_address:
-    //ldrb r4, [r0, #2]
-
-    //// ACK with address 0
+    // ACK with address 0
     //mov r1, r0
     //add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
-    //mov r3, #0x1 
-    //lsl r3, #0x13
+    //mov r3, #1 
+    //lsl r3, #15
     //bl _usb_ack
-    
+    //
+    //b tst
+
     b usb_isr_setup_ret
     // }}}
     // }}}

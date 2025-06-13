@@ -60,7 +60,7 @@ usb_ack_check:
     and r0, r2 // AND buffer val to desired bit
     bne usb_ack_check // loop if Z=0, we want Z=1
 
-    mov r0, #0
+    ldr r0, =(0b1<<13)
     orr r0, r3
     str r0, [r1] // Finally, store our calculated values to the bffer control register
     nop
