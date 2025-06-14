@@ -63,7 +63,7 @@ usb_isr_setup_data_dir_in:
 usb_isr_setup_data_dir_in_jump_table:
     .word usb_isr_setup_ret // There should ideally never be a value of 0 in the wValue.descriptor_type. If there is, the packet is invalid and we will ignore it.
     .word handle_descriptor_type_device // This is the case for whe wValue.descriptor_type is of type DEVICE
-    .word test // This is the case for whe wValue.descriptor_type is of type CONFIG
+    .word handle_descriptor_type_configuration // This is the case for whe wValue.descriptor_type is of type CONFIG
     .word test // This is the case for whe wValue.descriptor_type is of type STRING
     // }}}
 
@@ -76,6 +76,24 @@ handle_descriptor_type_device:
     add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
     ldr r3, =usb_device_descriptor // mem location of source is usb_device_descriptor
     mov r0, #18
+    bl _usb_memcpy
+
+    ldr r1, =0x50100084
+    mov r3, #0
+    bl _usb_ack
+
+    b usb_isr_setup_ret
+    // }}}
+
+    // {{{ handler for descriptor type of configuration
+.thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
+handle_descriptor_type_configuration:
+    mov r1, r0
+    add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
+    mov r2, r1
+    add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
+    ldr r3, =usb_configuration_descriptor // mem location of source is usb_configuration descriptor
+    mov r0, #9
     bl _usb_memcpy
 
     ldr r1, =0x50100084
