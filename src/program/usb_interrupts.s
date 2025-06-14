@@ -20,17 +20,17 @@ usb_isr_callback:
     ldr r0, =usbctrl_regs_ints
     ldr r1, [r0]
 
-    // STEP 3: If this interrupt is caused by a buffer being completed, handle that
-    mov r2, #0b1
-    lsl r2, #4
-    and r2, r1
-    bne usb_isr_buff_packet_handler
-
     // STEP 2: If this interrupt is caused by a bus reset packet, handle that
     mov r2, #0b1
     lsl r2, #12
     and r2, r1
     bne usb_isr_bus_reset_handler
+
+    // STEP 3: If this interrupt is caused by a buffer being completed, handle that
+    mov r2, #0b1
+    lsl r2, #4
+    and r2, r1
+    bne usb_isr_buff_packet_handler
 
     // STEP 4: If this interrupt is a setup packet, handle that
     mov r2, #0b1
@@ -57,8 +57,16 @@ usb_isr_bus_reset_handler:
 // }}}
 // buffer packet handler for isr {{{
 usb_isr_buff_packet_handler:
+    // Check if ISR is caused by in on endpoint 0
+    //ldr r0, =0x50110058
+    //ldr r1, [r0]
+    //cmp r1, #1
+    //bne usb_isr_buff_ret
+    // Check if ISR is caused by SET_ADDR packet
+    //ldr r0, =0x50100001
+    //ldrh r1, [r0]
     cmp r4, #0
-    beq usb_isr_buff_ret
+    bls usb_isr_buff_ret
     
 new_addr_set:
     // set up new address
@@ -69,11 +77,10 @@ new_addr_set:
 usb_isr_buff_ret:
     // Finally, clear the bits from the buff status register
     ldr r0, =0x50110000 + 0x58
-    mov r1, #0b1
+    ldr r1, =0xffffffff
     str r1, [r0]
 
     b usb_isr_callback
-
 // }}}
 
 .include "src/includes/usb_int_setup_handler.s"

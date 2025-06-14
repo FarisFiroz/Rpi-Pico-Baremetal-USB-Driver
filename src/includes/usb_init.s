@@ -83,7 +83,7 @@ equates:
 
     // Enable interrupts for when a buffer is done, when the bus is reset, and when a setup packet is received
     // TODO
-    ldr r6, =0b0<<4 | 0b0<<12 | 0b1<<16
+    ldr r6, =0b1<<4 | 0b0<<12 | 0b1<<16
     add r7, #0x90
     str r6, [r7]
 
