@@ -37,6 +37,7 @@ usb_memcpy_buffer_control:
     orr r0, r2 // Set full bit for buffer 0
     orr r0, r5 // Set the bits for length for buffer 0
     str r0, [r1] // store our calculated values to the bffer control register
+usb_memcpy_write_final:
     nop
     nop
     nop
@@ -58,12 +59,7 @@ _usb_ack:
     ldr r0, =(0b1<<13)
     orr r0, r3
     str r0, [r1] // Finally, store our calculated values to the bffer control register
-    nop
-    nop
-    nop
-    ldr r2, =0b1<<10 
-    orr r0, r2
-    str r0, [r1] // Finally, store our calculated values to the bffer control register
+    b usb_memcpy_write_final
 
     b usb_memcpy_ret
 // }}}
