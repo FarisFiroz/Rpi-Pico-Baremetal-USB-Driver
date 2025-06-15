@@ -1,13 +1,37 @@
-/* setup packet handler for the isr 
-If the interrupt is caused by a setup packet, we will handle it here
+/* Setup Packet Handler - Documentation {{{
+The first type of packet we will need to handle after a bus reset is the Setup Packet. As the name implies, this type of packet is used to "set up" the device/host. It can provide important data to the host such as descriptors that describe a device and its capabilities. It can also be used to tell the USB device to perform certain actions like set the adress to respond to or set the configuration to use.
 
-TYPICAL bRequest ORDER
-GET_DESCRIPTOR (Device)
-SET_ADDRESS
-GET_DESCRIPTOR (Config)
-SET_CONFIGURATION
-*/
+Setup packets have three total stages:
+- Setup Stage: This is the stage where the host sends a setup packet to the device (us). We will need to understand this packet and make decisions on our next action based on that. This will ALWAYS use the DATA0 Process ID.
+- Data Stage: This is the stage where actual data transfer takes place, described in terms of data flow for the host (OUT = Out from host | IN = In to host). For setup packets this will ALWAYS begin with the DATA1 PID and alternate until the data transfer is done and the status stage begins.
+- Status Stage: This is the stage where the status of the command is sent to the host on every poll that the host does. Our controller will automatically send a NAK (Negative Acknowledgement) unless we set a control transfer for it. When we finish with the data stage, the device will either send an ACK or a Zero-length data packet depending on if this is is a Control Read or a Control Write (More on that in the next section). For our case, the controller will handle whether it is an ACK or a ZLP, we just need to program it to send that data. This will ALWAYS use the DATA1 PID.
+
+Control Read/Write:
+A control transfer is described in terms of data flow in regards to the host. (IN/OUT) (Refer to the Setup Packets Data Stage if confused)
+A Control read is when the host requests a data to come IN from the device. The data stage will use the IN buffer and the status stage will use the OUT buffer. Sending a Zero-length packet once done.
+A control write is when the host wishes to send data OUT to the device. If there is data to be send, the host will use the OUT buffer; if there is not, then this is a No-data control and the OUT buffer can be ignored. The status stage will use the IN buffer and simply sends an ACK once finished.
+
+Setup Packet Byte Order:
+The setup packet consists of 8 bytes in total and their order will be shown below. Refer to the USB specification for more information, this section is only to introduce words that will be used later on in the documentation. Remember, some of these are 2-byte fields; there are only 5 fields for the 8 bytes of data.
+
+| - | ------------- |
+| 0 | bmRequestType |
+| 1 | - bRequest -- |
+| 2 | --- wValue -- |
+| 4 | --- wIndex -- |
+| 6 | -- wLength -- |
+| - | ------------- |
+
+The important takeaway from this packet for our use-case is that bmRequestType will hold the data direction and bRequest is the ID of the request itself.
+
+References:
+    USB 2.0 Specification: Section 8.5.3
+}}} */
 usb_isr_setup_packet_handler:
+    /* DATA PID SET {{{
+        As specified in the documentation above, all of the data transfers for a setup packet use DATA1. We will set that below.
+    */
+    // }}}
     // Data Direction Check {{{
 
     // Load initial value

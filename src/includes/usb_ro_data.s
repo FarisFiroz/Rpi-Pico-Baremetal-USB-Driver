@@ -1,3 +1,8 @@
+/*
+This file contains descriptor data that will be sent to the device whenever the host uses a GET_DESCRIPTOR command.
+These descriptors contain useful information that the host can use to understand what kind of device this is.
+*/
+
 // Device descriptor data
 usb_device_descriptor:
     .byte 18      // (bLength)
@@ -15,12 +20,13 @@ usb_device_descriptor:
     .byte 0x0     // (iSerialNumber) No serial number
     .byte 0x1     // (bNumConfigurations) One configuration
 
+// Configuration descriptor data
 usb_configuration_descriptor:
     .byte 9     // (bLength)
     .byte 2     // (bDescriptorType)
     .word 9     // (wTotalLength)
-    .byte 1     // (bNumInterfaces) One interface total
-    .byte 1     // (bConfigurationValue) Configuration 1
+    .byte 0     // (bNumInterfaces) One interface total
+    .byte 0     // (bConfigurationValue) Configuration 1
     .byte 0     // (iConfiguration) No string descriptor describing this configuration
     .byte 0xc0  // (bmAttributes) Self powered, no remote wakeup
     .byte 50    // (bMaxPower) 100mA current draw max

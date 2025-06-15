@@ -72,6 +72,3 @@ usb_ack_check:
 
     bx lr
 // }}}
-
-tst:
-    b tst
