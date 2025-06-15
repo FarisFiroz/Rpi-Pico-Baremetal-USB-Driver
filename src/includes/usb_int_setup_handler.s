@@ -63,8 +63,6 @@ handle_set_address:
     // ACK with address 0
     mov r1, r0
     add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
-    mov r3, #1 
-    lsl r3, #15
     mov r0, #0
     bl _usb_memcpy
 
@@ -104,7 +102,6 @@ handle_descriptor_type_device:
     bl _usb_memcpy
 
     ldr r1, =0x50100084
-    mov r3, #0
     mov r0, #0
     bl _usb_memcpy
 
@@ -123,7 +120,6 @@ handle_descriptor_type_configuration:
     bl _usb_memcpy
 
     ldr r1, =0x50100084
-    mov r3, #0
     mov r0, #0
     bl _usb_memcpy
 

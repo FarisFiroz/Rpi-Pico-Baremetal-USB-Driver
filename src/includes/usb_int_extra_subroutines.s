@@ -52,10 +52,16 @@ usb_memcpy_ret:
 /* usb_snl function {{{
 params:
     r1: mem location of buffer control register
-    r3: Direction of snl in/out
 */
 // Wait until controller is not using ep_0
 _usb_ack:
+    mov r3, r1 // Copy Value of r1 over for calculation
+    lsr r3, #2 // Shift over two bits (This bit is the one that will determine whether we need to set the buffer full bit)
+    mov r2, #1 // Value to AND and XOR with
+    and r3, r2 // Isolate the bit
+    eor r3, r2 // Inverse of found bit
+    lsl r3, #15 // Bit 15 is the buffer full bit
+
     ldr r0, =(0b1<<13)
     orr r0, r3
     str r0, [r1] // Finally, store our calculated values to the bffer control register
