@@ -65,7 +65,8 @@ handle_set_address:
     add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
     mov r3, #1 
     lsl r3, #15
-    bl _usb_ack
+    mov r0, #0
+    bl _usb_memcpy
 
     b usb_isr_setup_ret
     // }}}
@@ -104,7 +105,8 @@ handle_descriptor_type_device:
 
     ldr r1, =0x50100084
     mov r3, #0
-    bl _usb_ack
+    mov r0, #0
+    bl _usb_memcpy
 
     b usb_isr_setup_ret
     // }}}
@@ -122,7 +124,8 @@ handle_descriptor_type_configuration:
 
     ldr r1, =0x50100084
     mov r3, #0
-    bl _usb_ack
+    mov r0, #0
+    bl _usb_memcpy
 
     b usb_isr_setup_ret
     // }}}

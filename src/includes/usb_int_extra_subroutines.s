@@ -8,6 +8,9 @@ params:
 _usb_memcpy:
     push {r4, r5, lr} // Push values to stack that we will modify
 
+    cmp r0, #0
+    beq _usb_ack
+
 // Wait until controller is not using ep_0
     mov r5, #1
     lsl r5, #10 // R5 has available bit value
@@ -41,6 +44,7 @@ usb_memcpy_buffer_control:
     orr r0, r2 // Set available bit for buffer 0
     str r0, [r1] // Store the available bit later because the system clock is faster than the controller
 
+usb_memcpy_ret:
     pop {r4, r5, pc} // Pop from stack and return to function caller
 // }}}
 
@@ -70,5 +74,5 @@ usb_ack_check:
     orr r0, r2
     str r0, [r1] // Finally, store our calculated values to the bffer control register
 
-    bx lr
+    b usb_memcpy_ret
 // }}}
