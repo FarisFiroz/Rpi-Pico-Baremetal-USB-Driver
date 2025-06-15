@@ -1,4 +1,4 @@
-/* USB Memory Copy - Documentation {
+/* USB Memory Copy - Documentation {{{
 
 description:
     This subroutine will handle all write transactions to the USB. It supports two modes of operation based on the value of the length parameter given in r0.
