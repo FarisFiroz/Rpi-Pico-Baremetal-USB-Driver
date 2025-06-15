@@ -8,9 +8,6 @@ params:
 _usb_memcpy:
     push {r4, r5, lr} // Push values to stack that we will modify
 
-    cmp r0, #0
-    beq _usb_ack
-
 // Wait until controller is not using ep_0
     mov r5, #1
     lsl r5, #10 // R5 has available bit value
@@ -18,6 +15,9 @@ usb_memcpy_check:
     ldr r4, [r1] // Load buffer value
     and r4, r5 // AND buffer val to desired bit
     bne usb_memcpy_check // loop if Z=0, we want Z=1
+
+    cmp r0, #0
+    beq _usb_ack
 
 // preset length
     mov r5, r0 // copy length to use in buffer_control phase
@@ -55,15 +55,6 @@ params:
 */
 // Wait until controller is not using ep_0
 _usb_ack:
-
-// want to make sure buffer is ready
-    mov r2, #1
-    lsl r2, #10 // R2 has available bit value
-usb_ack_check:
-    ldr r0, [r1] // Load buffer value
-    and r0, r2 // AND buffer val to desired bit
-    bne usb_ack_check // loop if Z=0, we want Z=1
-
     ldr r0, =(0b1<<13)
     orr r0, r3
     str r0, [r1] // Finally, store our calculated values to the bffer control register
