@@ -6,10 +6,14 @@ This function is an interrupt service routine for all USB interrupts. It runs re
 It will need to perform different tasks based on which interrupt specifically triggered this event.
 
 equates:
-    usbctrl_regs_ints: Base Status register for the usb controller
+    usb_dpsram: Dual-Port Sram base address for the USB
+    usbctrl_regs: Base register for the usb controller
+    usbctrl_regs_status: Status register for the usb controller
     usbctrl_regs_ints: Status register for the interrupts for the usb controller
 */
+.equ usb_dpsram, 0x50100000 
 .equ usbctrl_regs, 0x50110000 
+.equ usbctrl_regs_status, usbctrl_regs + 0x50
 .equ usbctrl_regs_ints, usbctrl_regs + 0x98
 
 .type _usb_isr %function
@@ -64,11 +68,11 @@ This involves doing two things:
 */
 usb_isr_bus_reset_handler:
     // We can now clear the other interrupts
-    ldr r0, =0x50110000 + 0x50
+    ldr r0, =usbctrl_regs_status
     mov r1, #0b1
-    lsl r1, #19-17
+    lsl r1, #19-17 // Bit 19 is the bus reset status
     add r1, #0b1
-    lsl r1, #17
+    lsl r1, #17 // Bit 17 is the step packet status
     str r1, [r0]
 
     // Clear address and buffer ISR interrupts

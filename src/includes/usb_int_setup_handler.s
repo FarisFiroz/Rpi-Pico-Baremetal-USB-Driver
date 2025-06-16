@@ -35,7 +35,7 @@ usb_isr_setup_packet_handler:
     // Data Direction Check {{{
 
     // Load initial value
-    ldr r0, =0x50100000 // Base address of the setup packet 
+    ldr r0, =usb_dpsram // Base address of the setup packet 
 
     // Check which direction data should flow
     ldrb r1, [r0] // Load first byte of the setup packet (bmRequestType)
@@ -50,17 +50,18 @@ usb_isr_setup_data_dir_out:
     ldrb r1, [r0, #1] // Load second byte of setup packet (bRequest)
     cmp r1, #5 // Check if the request is a SET_ADDRESS
     beq handle_set_address // branch if SET_ADDRESS
-    cmp r1, #7 // Check if the request is a SET_CONFIGURATION
+    cmp r1, #9 // Check if the request is a SET_CONFIGURATION
+    beq direction_out_ack // set_configuration just needs to send an ack
     b usb_isr_setup_ret // branch on all other out requests
     // If SET_CONFIGURATION, simply continue to run TODO
     // }}}
-
     // SET_ADDRESS handler {{{
 handle_set_address:
-    ldr r0, =0x50100000
     ldrb r4, [r0, #2]
-
-    // ACK with address 0
+    // }}}
+    // ACK with address 0 {{{
+direction_out_ack:
+    // Important: r0 must equal 0 for the following code to work
     mov r1, r0
     add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
     mov r0, #0
@@ -69,6 +70,7 @@ handle_set_address:
     b usb_isr_setup_ret
     // }}}
     // }}}
+
     // DATA DIRECTION IN {{{
 usb_isr_setup_data_dir_in:
     // Initial Switch-Case {{{
@@ -79,6 +81,13 @@ usb_isr_setup_data_dir_in:
     lsl r1, #2 // Shift to the left once to multiply by 4 (memory locations are 32-bit in size, so we will use 4-byte offsets in our table)
     adr r2, usb_isr_setup_data_dir_in_jump_table // Get the address of the jump table
     ldr r3, [r2, r1] // Load the address of the target label from the jump table based on the offset we calculated in r1
+
+    // Load EP0 values since setup packets always use EP0
+    mov r1, r0
+    add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
+    mov r2, r1
+    add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
+
     bx r3 // Jump to the address we loaded in the previous instruction
 
 .align 2
@@ -88,43 +97,34 @@ usb_isr_setup_data_dir_in_jump_table:
     .word handle_descriptor_type_configuration // This is the case for whe wValue.descriptor_type is of type CONFIG
     .word test // This is the case for whe wValue.descriptor_type is of type STRING
     // }}}
-
     // {{{ handler for descriptor type of device
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 handle_descriptor_type_device:
-    mov r1, r0
-    add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
-    mov r2, r1
-    add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
     ldr r3, =usb_device_descriptor // mem location of source is usb_device_descriptor
     mov r0, #18
     bl _usb_memcpy
 
-    ldr r1, =0x50100084
-    mov r0, #0
-    bl _usb_memcpy
-
-    b usb_isr_setup_ret
+    b direction_in_ack
     // }}}
-
     // {{{ handler for descriptor type of configuration
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 handle_descriptor_type_configuration:
-    mov r1, r0
-    add r1, #0x80 // mem location of EP0-IN Buffer Control is 0x50100080
-    mov r2, r1
-    add r2, #0x80 // mem location of EP0 Buffer is 0x50100100
     ldr r3, =usb_configuration_descriptor // mem location of source is usb_configuration descriptor
     mov r0, #9
     bl _usb_memcpy
 
+    b direction_in_ack
+
+    // }}}
+    // {{{ direction in ack
+.thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
+direction_in_ack:
     ldr r1, =0x50100084
     mov r0, #0
     bl _usb_memcpy
 
     b usb_isr_setup_ret
     // }}}
-
 // {{{ test function
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 test:
@@ -135,7 +135,7 @@ test:
 usb_isr_setup_ret:
     // {{{ Return from usb_isr_setup
     // Finally, clear the bits from the status register
-    ldr r0, =0x50110000 + 0x50
+    ldr r0, =usbctrl_regs_status
     ldr r1, =0b1<<17
     str r1, [r0]
 

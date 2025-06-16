@@ -15,8 +15,8 @@ usb_device_descriptor:
     .hword 0x0000 // (idVendor)
     .hword 0x0001 // (idProduct)
     .hword 0x0    // (bcdDevice) No device revision number
-    .byte 0x1     // (iManufacturer) Manufacturer string index
-    .byte 0x2     // (iProduct) Product String index
+    .byte 0       // (iManufacturer) Manufacturer string index
+    .byte 0       // (iProduct) Product String index
     .byte 0x0     // (iSerialNumber) No serial number
     .byte 0x1     // (bNumConfigurations) One configuration
 
@@ -25,8 +25,8 @@ usb_configuration_descriptor:
     .byte 9     // (bLength)
     .byte 2     // (bDescriptorType)
     .word 9     // (wTotalLength)
-    .byte 0     // (bNumInterfaces) One interface total
-    .byte 0     // (bConfigurationValue) Configuration 1
+    .byte 0     // (bNumInterfaces) Zero interfaces total
+    .byte 1     // (bConfigurationValue) Configuration 1
     .byte 0     // (iConfiguration) No string descriptor describing this configuration
     .byte 0xc0  // (bmAttributes) Self powered, no remote wakeup
     .byte 50    // (bMaxPower) 100mA current draw max

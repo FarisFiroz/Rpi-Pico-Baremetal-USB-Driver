@@ -82,3 +82,6 @@ usb_memcpy_buffer_control:
 // STEP F {{{
     pop {r4, r5, pc}
 // }}}
+
+tst:
+    b tst
