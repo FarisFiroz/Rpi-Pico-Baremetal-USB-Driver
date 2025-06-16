@@ -54,21 +54,26 @@ usb_isr_callback:
 
     b usb_isr_ret
 // }}}
-// Bus Reset Handler {{{
-// TODO
-usb_isr_bus_reset_handler:
-    // On bus reset, we must first flip the DATA PID bit to 0
-    //ldr r1, =0x50110080
-    //mov r0, #0
-    //str r0, [r1] // Finally, store our calculated values to the bffer control register
+/* Bus Reset Handler {{{
+When we receive a bus reset from the host, we want to drop everything, reset everything to default, and expect a setup packet.
 
-    mov r4, #0
+This involves doing two things:
+1: We must reset the current address to 0
+2: We must clear all existing interrupts
+
+*/
+usb_isr_bus_reset_handler:
+    // We can now clear the other interrupts
     ldr r0, =0x50110000 + 0x50
-    ldr r1, =0b1<<19
+    mov r1, #0b1
+    lsl r1, #19-17
+    add r1, #0b1
+    lsl r1, #17
     str r1, [r0]
-    ldr r1, =0b1<<17
-    str r1, [r0]
-    b usb_isr_buff_ret
+
+    // Clear address and buffer ISR interrupts
+    mov r4, #0 // Clear the temporary register holding any new address to 0
+    b new_addr_set // Set the new address as this cleared address of 0
 // }}}
 // Buffer Packet Handler {{{
 // TODO Documentation

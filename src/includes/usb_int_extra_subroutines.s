@@ -54,18 +54,20 @@ usb_memcpy_loop:  // Actual memcopy loop from source to destination
 // }}}
 // STEP 4 {{{
 usb_memcpy_buffer_control:
+    // This step assumes that r0 will have a value of 0 (as it should have been decremented to 0 by the previous step)
+
     // First we will determine whether to set the full bit or not based on if this is an IN or an OUT buffer control register
-    mov r3, r1 // Copy Value of r1 over for calculation
-    lsr r3, #2 // Shift over two bits (This bit is the one that will determine whether we need to set the buffer full bit)
-    mov r2, #1 // Value to AND and XOR with
-    and r3, r2 // Isolate the bit
+    mov r3, r1 // Copy address of buffer control register (This logic is based on this register)
+    lsl r3, #(31-2)
+    lsr r3, #31 // Isolate the second bit as this is what determines whether this is an IN or an OUT buffer control register
+    mov r2, #1 // Temporary value used for flipping bit
     eor r3, r2 // Inverse of found bit
     lsl r3, #15 // Bit 15 is the buffer full bit
+    orr r0, r3 // Set full bit if necessary based on previous calculation
 
     // Now we will actually write the values to the register
     ldr r2, =(0b1<<13)
     orr r0, r2 // Set DATA PID bit for buffer 0
-    orr r0, r3 // Set full bit if necessary based on previous calculation
     orr r0, r5 // Set the length for buffer 0
     str r0, [r1] // store our calculated values to the bffer control register
 // }}}

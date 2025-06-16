@@ -69,7 +69,6 @@ handle_set_address:
     b usb_isr_setup_ret
     // }}}
     // }}}
-
     // DATA DIRECTION IN {{{
 usb_isr_setup_data_dir_in:
     // Initial Switch-Case {{{
