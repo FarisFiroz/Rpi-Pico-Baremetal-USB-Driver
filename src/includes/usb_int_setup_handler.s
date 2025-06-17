@@ -106,15 +106,25 @@ handle_descriptor_type_device:
 
     b direction_in_ack
     // }}}
-    // {{{ handler for descriptor type of configuration
+    // {{{ handler for descriptor type of configurati
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 handle_descriptor_type_configuration:
+    ldrh r3, [r0, #6] // (wLength) We need to check what the wLength is (It should be 9 the first time, and (9 + size of interface and endpoint descriptors) the second time)
+
+    cmp r3, #9 // Check if the value of wLength is 9 (First iteration)
+    bne handle_descriptor_type_second_configuration // (If it is not 9, jump)
+
+    mov r0, #9 // First config call gets 9
+    b handle_descriptor_type_configuration_calls
+
+handle_descriptor_type_second_configuration:
+    mov r0, #18 // Second config call gets 18
+
+handle_descriptor_type_configuration_calls:
     ldr r3, =usb_configuration_descriptor // mem location of source is usb_configuration descriptor
-    mov r0, #9
     bl _usb_memcpy
 
     b direction_in_ack
-
     // }}}
     // {{{ direction in ack
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)

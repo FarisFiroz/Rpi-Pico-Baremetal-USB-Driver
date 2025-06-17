@@ -22,11 +22,23 @@ usb_device_descriptor:
 
 // Configuration descriptor data
 usb_configuration_descriptor:
+    .byte 9         // (bLength)
+    .byte 2         // (bDescriptorType)
+    .hword 18        // (wTotalLength)
+    .byte 1         // (bNumInterfaces) One interface total
+    .byte 1         // (bConfigurationValue) Configuration 1
+    .byte 0         // (iConfiguration) No string descriptor describing this configuration
+    .byte 0b100<<5  // (bmAttributes) Self powered, no remote wakeup
+    .byte 50        // (bMaxPower) 100mA current draw max
+
+// Interface descriptor data
+usb_interface_descriptor:
     .byte 9     // (bLength)
-    .byte 2     // (bDescriptorType)
-    .word 9     // (wTotalLength)
-    .byte 0     // (bNumInterfaces) Zero interfaces total
-    .byte 1     // (bConfigurationValue) Configuration 1
-    .byte 0     // (iConfiguration) No string descriptor describing this configuration
-    .byte 0xc0  // (bmAttributes) Self powered, no remote wakeup
-    .byte 50    // (bMaxPower) 100mA current draw max
+    .byte 4     // (bDescriptorType)
+    .byte 0     // (bInterfaceNumber)
+    .byte 0     // (bAlternateSetting)
+    .byte 0     // (bNumEndpoints)
+    .byte 0xFF  // (bInterfaceClass)
+    .byte 0     // (bInterfaceSubClass)
+    .byte 0     // (bInterfaceProtocol)
+    .byte 0     // (iInterface)
