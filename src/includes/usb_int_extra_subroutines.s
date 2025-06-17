@@ -9,14 +9,12 @@ description:
     Generally, buffer locations ending in a 0x0 or a 0x8 are IN buffers, and buffer locations ending in a 0x4 or a 0xc are OUT buffers.
     The subroutine will automatically select whether to set the "buffer full" bit based on the buffer location.
 
-    TODO - The subroutine will also automatically flip the DATA PID before sending the data, so make sure the current data PID is the opposite of what you would like to send.
-
 steps:
     STEP 0: Push register values that we will modify to the stack along with the link register
     STEP 1: Spinlock until the endpoint is free to use. We do not want to write while the controller is performing operations on the endpoint.
     STEP 2: Check whether this is a normal data write or if it is a ZLP
     STEP 3: This is the memcopy loop that copies the data from the source adress to the destination address
-    STEP 4: Calculate and write all buffer control values (except for the available bit)
+    STEP 4: Calculate and write all buffer control values (except for the available bit) [Flipping the DATA PID bit occurs here as well]
     STEP 5: Write available bit into buffer control register
     STEP F: Pop initial register values from the stack and return from subroutine
 
@@ -39,11 +37,11 @@ usb_memcpy_check:
     bne usb_memcpy_check // loop if available bit is set to 1 (controller sets available bit to 0 when it has used the buffer)
 // }}}
 // STEP 2 {{{
+    mov r5, r0 // We will modify the value of r0, but we need it for the buffer control register. We will make a copy of it for this reason.
     cmp r0, #0 // Check whether length is 0
     beq usb_memcpy_buffer_control // Jump if the length is 0
 // }}}
 // STEP 3 {{{
-    mov r5, r0 // We will modify the value of r0, but we need it for the buffer control register. We will make a copy of it for this reason.
 usb_memcpy_loop:  // Actual memcopy loop from source to destination
     ldrb r4, [r3] // From the current mem location of the source data, copy the value into our temporary buffer r4
     strb r4, [r2] // From the temporary buffer r4, copy the value to the target
@@ -56,7 +54,9 @@ usb_memcpy_loop:  // Actual memcopy loop from source to destination
 usb_memcpy_buffer_control:
     // This step assumes that r0 will have a value of 0 (as it should have been decremented to 0 by the previous step)
 
-    // First we will determine whether to set the full bit or not based on if this is an IN or an OUT buffer control register
+    orr r0, r5 // Set the length for buffer 0
+
+    // determine whether to set the full bit or not based on if this is an IN or an OUT buffer control register
     mov r3, r1 // Copy address of buffer control register (This logic is based on this register)
     lsl r3, #(31-2)
     lsr r3, #31 // Isolate the second bit as this is what determines whether this is an IN or an OUT buffer control register
@@ -65,10 +65,16 @@ usb_memcpy_buffer_control:
     lsl r3, #15 // Bit 15 is the buffer full bit
     orr r0, r3 // Set full bit if necessary based on previous calculation
 
+    // Flip the DATA bit
+    ldr r5, =data_pid_val
+    ldr r3, [r5] // Load old value
+    lsl r2, #13 // Value to perform logic with (Assumes r2 = 1)
+    and r3, r2 // Isolate DATA PID bit
+    eor r3, r2 // Flip DATA PID bit
+    str r3, [r5] // Store the new DATA PID bit value into ram
+    eor r0, r3 // Set Calculated DATA PID bit value
+
     // Now we will actually write the values to the register
-    ldr r2, =(0b1<<13)
-    orr r0, r2 // Set DATA PID bit for buffer 0
-    orr r0, r5 // Set the length for buffer 0
     str r0, [r1] // store our calculated values to the bffer control register
 // }}}
 // STEP 5 {{{

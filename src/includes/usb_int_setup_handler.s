@@ -29,11 +29,14 @@ References:
 }}} */
 usb_isr_setup_packet_handler:
     /* DATA PID SET {{{
-        As specified in the documentation above, all of the data transfers for a setup packet use DATA1. We will set that below.
+        As specified in the documentation above, all of the data transfers for a setup packet use DATA1. We will set the value to DATA0 now, because DATA1 flip will happen later.
     */
+.equ data_pid_val, 0x20040000 // Data pid value
+    ldr r0, =data_pid_val
+    mov r1, #0
+    str r1, [r0]
     // }}}
     // Data Direction Check {{{
-
     // Load initial value
     ldr r0, =usb_dpsram // Base address of the setup packet 
 
@@ -106,7 +109,7 @@ handle_descriptor_type_device:
 
     b direction_in_ack
     // }}}
-    // {{{ handler for descriptor type of configurati
+    // {{{ handler for descriptor type of configuration
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 handle_descriptor_type_configuration:
     ldrh r3, [r0, #6] // (wLength) We need to check what the wLength is (It should be 9 the first time, and (9 + size of interface and endpoint descriptors) the second time)
@@ -129,6 +132,10 @@ handle_descriptor_type_configuration_calls:
     // {{{ direction in ack
 .thumb_func // thumb functions require the last bit to be set as 1. (.thumb_func tells the assembler to do that)
 direction_in_ack:
+    ldr r0, =data_pid_val
+    mov r1, #0
+    str r1, [r0]
+
     ldr r1, =0x50100084
     mov r0, #0
     bl _usb_memcpy
