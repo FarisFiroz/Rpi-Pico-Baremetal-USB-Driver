@@ -118,7 +118,7 @@ handle_descriptor_type_configuration:
     b handle_descriptor_type_configuration_calls
 
 handle_descriptor_type_second_configuration:
-    mov r0, #18 // Second config call gets 18
+    mov r0, #9+9+2*7 // Second config call gets 18
 
 handle_descriptor_type_configuration_calls:
     ldr r3, =usb_configuration_descriptor // mem location of source is usb_configuration descriptor

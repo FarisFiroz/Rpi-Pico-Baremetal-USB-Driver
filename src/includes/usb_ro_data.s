@@ -24,7 +24,7 @@ usb_device_descriptor:
 usb_configuration_descriptor:
     .byte 9         // (bLength)
     .byte 2         // (bDescriptorType)
-    .hword 18        // (wTotalLength)
+    .hword 9+9+2*7  // (wTotalLength)
     .byte 1         // (bNumInterfaces) One interface total
     .byte 1         // (bConfigurationValue) Configuration 1
     .byte 0         // (iConfiguration) No string descriptor describing this configuration
@@ -42,3 +42,21 @@ usb_interface_descriptor:
     .byte 0     // (bInterfaceSubClass)
     .byte 0     // (bInterfaceProtocol)
     .byte 0     // (iInterface)
+
+// Endpoint 1 descriptor data
+usb_ep1_descriptor:
+    .byte 7     // (bLength)
+    .byte 5     // (bDescriptorType)
+    .byte 1     // (bEndpointAddress) [Direction | The endpoint Number] Direction OUT and Endpoint 1
+    .byte 0b10  // (bmAttributes) [Transfer Type | Synchronization Type | Usage Type ] Transfer type is Bulk
+    .hword 64   // (wMaxPacketSize) 64 bytes max packet size
+    .byte 0     // (bInterval)
+
+// Endpoint 2 descriptor data
+usb_ep2_descriptor:
+    .byte 7         // (bLength)
+    .byte 5         // (bDescriptorType)
+    .byte 1<<7 | 2  // (bEndpointAddress) [Direction | The endpoint Number] Direction IN and Endpoint 2
+    .byte 0b10      // (bmAttributes) [Transfer Type | Synchronization Type | Usage Type ] Tranfer type is Bulk
+    .hword 64       // (wMaxPacketSize) 64 bytes max packet size
+    .byte 0         // (bInterval)

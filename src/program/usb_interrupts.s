@@ -87,9 +87,6 @@ usb_isr_buff_packet_handler:
     //ldr r1, [r0]
     //cmp r1, #1
     //bne usb_isr_buff_ret
-    // Check if ISR is caused by SET_ADDR packet
-    //ldr r0, =0x50100001
-    //ldrh r1, [r0]
     cmp r4, #0
     bls usb_isr_buff_ret
     
