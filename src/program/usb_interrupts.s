@@ -96,14 +96,14 @@ usb_isr_buff_packet_handler:
     
 new_addr_set:
     // set up new address
-    ldr r2, =0x50110000
+    ldr r2, =usbctrl_regs
     str r1, [r2]
     mov r1, #0
     str r1, [r0]
 
 usb_isr_buff_ret:
     // Finally, clear the bits from the buff status register
-    ldr r0, =0x50110000 + 0x58
+    ldr r0, =usbctrl_regs + 0x58
     ldr r1, =0xffffffff
     str r1, [r0]
 
