@@ -76,7 +76,9 @@ usb_isr_bus_reset_handler:
     str r1, [r0]
 
     // Clear address and buffer ISR interrupts
-    mov r4, #0 // Clear the temporary register holding any new address to 0
+    ldr r2, =new_address_val
+    mov r1, #0
+    str r1, [r2] // Clear new address val in-case it is set on bus-reset
     b new_addr_set // Set the new address as this cleared address of 0
 // }}}
 // Buffer Packet Handler {{{
@@ -87,14 +89,17 @@ usb_isr_buff_packet_handler:
     //ldr r1, [r0]
     //cmp r1, #1
     //bne usb_isr_buff_ret
-    cmp r4, #0
+    ldr r0, =new_address_val
+    ldr r1, [r0]
+    cmp r1, #0 // Load value of new address, if it is 0 skip, else set that address
     bls usb_isr_buff_ret
     
 new_addr_set:
     // set up new address
     ldr r2, =0x50110000
-    str r4, [r2]
-    mov r4, #0
+    str r1, [r2]
+    mov r1, #0
+    str r1, [r0]
 
 usb_isr_buff_ret:
     // Finally, clear the bits from the buff status register

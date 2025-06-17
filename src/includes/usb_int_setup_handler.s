@@ -59,8 +59,12 @@ usb_isr_setup_data_dir_out:
     // If SET_CONFIGURATION, simply continue to run TODO
     // }}}
     // SET_ADDRESS handler {{{
+.equ new_address_val, 0x20040004
+
 handle_set_address:
-    ldrb r4, [r0, #2]
+    ldrb r1, [r0, #2]
+    ldr r2, =new_address_val
+    str r1, [r2]
     // }}}
     // ACK with address 0 {{{
 direction_out_ack:
