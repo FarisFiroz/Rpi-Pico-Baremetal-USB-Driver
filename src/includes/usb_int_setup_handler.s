@@ -140,7 +140,7 @@ direction_in_ack:
     mov r1, #0
     str r1, [r0]
 
-    ldr r1, =0x50100084
+    ldr r1, =usb_dpsram + 0x84
     mov r0, #0
     bl _usb_memcpy
 
