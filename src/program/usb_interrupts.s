@@ -85,13 +85,32 @@ usb_isr_bus_reset_handler:
 // Buffer Packet Handler {{{
 // TODO Documentation
 usb_isr_buff_packet_handler:
-    // Check if ISR is caused by in on endpoint 0
+    // Check which endpoint caused this {{{
+    // Load initial values for endpoint check
     ldr r0, =usbctrl_regs_buff_status
     ldr r1, [r0]
-    mov r0, #1
-    and r1, r0
-    beq usb_isr_buff_ret
+    // Check if ISR is caused by in on endpoint 0
+    mov r2, #1
+    and r2, r1
+    bne ep0_in_handler
+    // Check if ISR is caused by out on endpoint 1
+    mov r2, #1<<3
+    and r2, r1
+    bne ep1_out_handler
+    // Else, next code will return from the logic
+    // }}}
+    // Return from this logic {{{
+usb_isr_buff_ret:
+    // Finally, clear the bits from the buff status register
+    ldr r0, =usbctrl_regs_buff_status
+    ldr r1, =0xffffffff
+    str r1, [r0]
 
+    b usb_isr_callback
+    // }}}
+    // Endpoint 0 IN handler {{{
+ep0_in_handler:
+    // IF isr is caused by EP0, check if there is a new address to set
     ldr r0, =new_address_val
     ldr r1, [r0]
     cmp r1, #0 // Load value of new address, if it is 0 skip, else set that address
@@ -103,14 +122,12 @@ new_addr_set:
     str r1, [r2]
     mov r1, #0
     str r1, [r0]
-
-usb_isr_buff_ret:
-    // Finally, clear the bits from the buff status register
-    ldr r0, =usbctrl_regs_buff_status
-    ldr r1, =0xffffffff
-    str r1, [r0]
-
-    b usb_isr_callback
+    b usb_isr_buff_ret
+    // }}}
+    // Endpoint 1 OUT handler {{{
+ep1_out_handler:
+    b tst
+    // }}}
 // }}}
 
 .include "src/includes/usb_int_setup_handler.s"
