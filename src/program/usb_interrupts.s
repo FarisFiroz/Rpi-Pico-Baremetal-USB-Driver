@@ -14,6 +14,7 @@ equates:
 .equ usb_dpsram, 0x50100000 
 .equ usbctrl_regs, 0x50110000 
 .equ usbctrl_regs_status, usbctrl_regs + 0x50
+.equ usbctrl_regs_buff_status, usbctrl_regs + 0x58
 .equ usbctrl_regs_ints, usbctrl_regs + 0x98
 
 .type _usb_isr %function
@@ -85,10 +86,12 @@ usb_isr_bus_reset_handler:
 // TODO Documentation
 usb_isr_buff_packet_handler:
     // Check if ISR is caused by in on endpoint 0
-    //ldr r0, =0x50110058
-    //ldr r1, [r0]
-    //cmp r1, #1
-    //bne usb_isr_buff_ret
+    ldr r0, =usbctrl_regs_buff_status
+    ldr r1, [r0]
+    mov r0, #1
+    and r1, r0
+    beq usb_isr_buff_ret
+
     ldr r0, =new_address_val
     ldr r1, [r0]
     cmp r1, #0 // Load value of new address, if it is 0 skip, else set that address
@@ -103,7 +106,7 @@ new_addr_set:
 
 usb_isr_buff_ret:
     // Finally, clear the bits from the buff status register
-    ldr r0, =usbctrl_regs + 0x58
+    ldr r0, =usbctrl_regs_buff_status
     ldr r1, =0xffffffff
     str r1, [r0]
 
