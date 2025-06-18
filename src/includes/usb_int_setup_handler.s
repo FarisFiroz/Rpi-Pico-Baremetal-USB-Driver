@@ -54,7 +54,7 @@ usb_isr_setup_data_dir_out:
     cmp r1, #5 // Check if the request is a SET_ADDRESS
     beq handle_set_address // branch if SET_ADDRESS
     cmp r1, #9 // Check if the request is a SET_CONFIGURATION
-    beq direction_out_ack // set_configuration just needs to send an ack
+    beq handle_set_configuration // set_configuration just needs to send an ack
     b usb_isr_setup_ret // branch on all other out requests
     // If SET_CONFIGURATION, simply continue to run TODO
     // }}}
@@ -75,6 +75,10 @@ direction_out_ack:
     bl _usb_memcpy
 
     b usb_isr_setup_ret
+    // }}}
+    // SET_CONFIGURATION handler {{{
+handle_set_configuration:
+    b direction_out_ack
     // }}}
     // }}}
 

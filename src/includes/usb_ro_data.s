@@ -37,7 +37,7 @@ usb_interface_descriptor:
     .byte 4     // (bDescriptorType)
     .byte 0     // (bInterfaceNumber)
     .byte 0     // (bAlternateSetting)
-    .byte 0     // (bNumEndpoints)
+    .byte 2     // (bNumEndpoints)
     .byte 0xFF  // (bInterfaceClass)
     .byte 0     // (bInterfaceSubClass)
     .byte 0     // (bInterfaceProtocol)
